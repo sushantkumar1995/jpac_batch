@@ -1,0 +1,57 @@
+#!/usr/bin/env groovy
+pipeline{
+    agent any
+    stages{
+        stage('Restore Nuget'){
+            steps{
+                echo "Restoring Nuget"
+                bat 'JPAC\\RestoreNuget.bat'
+            }
+        }
+        stage('Begin Sonar Analysis'){
+            steps {
+                echo "Started Sonar Analysis"
+                bat 'JPAC\\SonarBeginAnalysis.bat'
+            }
+        }
+        stage('Build'){
+            steps{
+                echo "Building"
+                bat "\"${tool 'MS Build-Default'}\" Code\\UHCG.SSP.API\\UHCG.USMARKETS.GI.API.sln /p:Configuration=Debug /p:Platform=\"Any CPU\" /p:ProductVersion=1.0.0.${env.BUILD_NUMBER}"
+            }
+        }
+        stage('Unit Test'){
+            steps{
+                echo "Running test cases"
+                bat "\"${tool 'MSTest'}\" /testcontainer:Code\\UHCG.SSP.API\\UHCG.USMARKETS.GI.API.UNITTEST\\bin\\Debug\\UHCG.SSP.API.UNITTEST.dll /resultsfile:TestResults.trx"
+            }
+        }
+        stage('End Sonar Analysis') 
+        {
+            steps {
+                echo "Ended Sonar Analysis"
+                bat 'JPAC\\SonarEndAnalysis.bat'
+            }
+        }
+        stage('Dev Approval'){
+            steps{
+                echo "Dev Approval"
+                timeout(time: 1, unit: 'HOURS') {
+                    emailext body:  "Click on the link to approve deployment: ${BUILD_URL}/console",
+                    subject: "BUILD $currentBuild.currentResult IN JENKINS : $JOB_NAME # $BUILD_NUMBER",
+                    from: "noreply@optum.com",
+                    to: "aksh_suri@optum.com"
+                    input 'Deploy to Dev Environment?'
+                }
+            }
+        }
+        stage('Dev Deploy'){
+            steps{
+                echo "Config Management"
+                bat 'JPAC\\ConfigManagementDev.bat'
+                echo "Deploying build to Dev Server"
+                bat 'JPAC\\DeployDev.bat'
+            }
+        }
+    }
+}

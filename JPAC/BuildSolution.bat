@@ -1,0 +1,1 @@
+\"${tool 'MS Build-Default'}\" Code\\UHCG.SSP.API\\UHCG.USMARKETS.GI.API.sln /p:Configuration=Debug /p:Platform=\"Any CPU\" /p:ProductVersion=1.0.0.${env.BUILD_NUMBER}

@@ -1,0 +1,1 @@
+\"${tool 'MSTest'}\" /testcontainer:Code\\UHCG.SSP.API\\UHCG.USMARKETS.GI.API.UNITTEST\\bin\\Debug\\UHCG.SSP.API.UNITTEST.dll /resultsfile:TestResults.trx
